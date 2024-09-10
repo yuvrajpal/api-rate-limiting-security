@@ -1,11 +1,12 @@
+require("dotenv").config();
 const express = require("express");
 const { body, validationResult } = require("express-validator");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 const logger = require("../logger");
 
-// Secret key for JWT (should be stored in environment variables in real apps)
-const JWT_SECRET = "your_jwt_secret";
+// Secret key for JWT (now stored in environment variables)
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Login route with validation and logging
 router.post(
@@ -39,9 +40,11 @@ router.post(
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1];
-  if (token == null) return res.sendStatus(401);
+  if (token == null)
+    return res.status(401).json({ message: "No token provided" });
+
   jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.sendStatus(403);
+    if (err) return res.status(403).json({ message: "Token is not valid" });
     req.user = user;
     next();
   });
